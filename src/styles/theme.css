@@ -2,15 +2,15 @@
 
 :root {
   --font-size: 16px;
-  --background: #0A0A0A;
+  --background: #0d0d0f;
   --foreground: #FFFFFF;
-  --card: #141414;
+  --card: #1a1a1f;
   --card-foreground: #FFFFFF;
-  --elevated: #1A1A1A;
-  --primary: #F9571E;
-  --primary-foreground: #FFFFFF;
-  --green: #22C55E;
-  --red: #EF4444;
+  --elevated: #1a1a1f;
+  --primary: #00ff87;
+  --primary-foreground: #000000;
+  --green: #00ff87;
+  --red: #ff3b5c;
   --gold: #FACC15;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -44,15 +44,15 @@
 }
 
 .dark {
-  --background: #0A0A0A;
+  --background: #0d0d0f;
   --foreground: #FFFFFF;
-  --card: #141414;
+  --card: #1a1a1f;
   --card-foreground: #FFFFFF;
-  --elevated: #1A1A1A;
-  --primary: #F9571E;
-  --primary-foreground: #FFFFFF;
-  --green: #22C55E;
-  --red: #EF4444;
+  --elevated: #1a1a1f;
+  --primary: #00ff87;
+  --primary-foreground: #000000;
+  --green: #00ff87;
+  --red: #ff3b5c;
   --gold: #FACC15;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
