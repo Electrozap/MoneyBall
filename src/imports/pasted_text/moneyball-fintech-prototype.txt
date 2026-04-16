@@ -1,0 +1,172 @@
+Act as a senior UI/UX designer specializing in dark-mode fintech and gaming applications. Design a comprehensive, production-ready Figma prototype for "MoneyBall" — a peer-to-peer NBA betting platform with custom odds and full gamification features.
+PROJECT OVERVIEW
+Application: MoneyBall — Private network NBA betting platformCore Concept: Hybrid of premium sportsbook + competitive leaderboard + clean SaaS dashboardTarget Experience: Competitive, social, data-driven betting within a private friend networkPlatforms: Responsive web and mobile applications
+DESIGN SYSTEM SPECIFICATIONS
+Theme: Dark mode exclusivelyColor Palette:
+
+Background: #0A0A0A
+Card surfaces: #141414
+Elevated cards: #1A1A1A
+Primary accent: #F9571E
+Secondary accents:
+Green (#22C55E): Profits, positive outcomes
+Red (#EF4444): Losses, negative outcomes
+Gold (#FACC15): Top ranks, badges, premium elements
+
+Typography:
+
+Font family: Modern sans-serif (Inter/Satoshi style)
+Hierarchy: Bold headers, compact data text
+Readability: High contrast for data visualization
+
+UI Components:
+
+Border radius: 16–24px
+Effects: Soft shadows, subtle borders, glassy overlays for modals
+Interactions: Smooth hover states, transition animations
+Visual feedback: Hover glow on selectable elements, animated counters
+
+APPLICATION STRUCTURE
+Desktop Navigation:
+
+Logo: MoneyBall
+Tabs: Dashboard, Explore Games, My Bets, Leaderboard, Ledger, Profile
+
+Mobile Navigation:
+
+Bottom navigation bar
+Floating "Create Bet" button (primary CTA)
+
+SCREEN REQUIREMENTS
+1. DASHBOARD — Competitive Overview
+KPI Grid (6 metrics):
+
+Total Profit/Loss (₹)
+ROI (%)
+Win Rate (%)
+Active Bets
+Total Wagered
+Current Streak indicator (🔥 Win/Loss)
+
+Performance Graph:
+
+Line chart: Profit over time
+Toggle filters: Weekly / Monthly / All time
+
+Recent Activity Table:
+
+Columns: Match, Bet Type, Odds, Stake, Result (color-coded)
+Sortable by date/result
+
+Quick Actions Panel:
+
+Create Bet (primary)
+View Ledger
+Invite Friend
+
+2. EXPLORE GAMES — Sportsbook Core
+Game Grid:
+
+NBA API-driven cards showing:
+Team logos and names
+Match time with live indicator
+
+Click interaction → Opens Bet Builder Panel (slide-in)
+
+Bet Builder Panel (Core UX Flow):
+
+Bet Type Selector (grid layout):
+
+Core: Moneyline, Spread, Over/Under
+Player & Props: Points/Assists/Rebounds, 3PT Made, First Basket, Double/Triple Double
+Game Props: Winning Margin, Team Totals
+Time-Based: Quarter Winner, Half-Time Result
+Special: Odd/Even, Race to X Points
+Advanced: Player Combos, Custom Scenarios
+
+Dynamic Configuration:
+
+Inputs adapt based on selected bet type
+Player dropdowns (API-driven)
+Spread/totals numeric inputs
+
+Custom Odds Engine (Signature Feature):
+
+Mode A (Ratio Input): Your Odds: 1 : [input], Opponent Odds: 1 : [input]
+Mode B (Outcome Based): "If I win → ₹X", "If I lose → ₹Y"
+
+Stake & Opponent Selection:
+
+Stake per user (₹)
+Friend selector (name-based search)
+Bet preview: "Risk ₹100 to win ₹200"
+
+CTA: "Send Bet Request"
+
+3. MY BETS — Bet Management
+Tab Structure: Active / Pending / CompletedBet Card Components:
+
+Match details
+Bet type
+Odds
+Stake amount
+Opponent name
+Status indicatorActions per status: Accept/Reject (pending), Resolve Outcome (active)
+
+4. LEADERBOARD — Global Competition Feel
+Header: "Top Bettors" with toggle filters: Profit / ROI / Win RateTop 3 Podium:
+
+Rank #1: Gold glow effect
+Rank #2: Silver styling
+Rank #3: Bronze styling
+Display: Name, Profit, Win rate, ROI
+
+Ranked List (scrollable):
+
+Columns: Rank number, Name, Profit (₹), ROI (%), Streak indicator (🔥), Trend arrow (↑↓)
+Subtle gradients for top 10 players
+
+5. LEDGER — Financial Management
+Two-Section Layout:
+
+"You Owe" (Red section): List of users + amounts with "Settle" button
+"You Are Owed" (Green section): List of users + amounts with "Request Payment" button
+
+Settlement Modal:
+
+Input: Amount field
+Selection: User dropdown
+Action: Confirm settlement
+
+6. PROFILE — Gamification Hub
+Header: Name, Avatar, Current streak indicator (🔥)Stats Grid (8 metrics):
+
+Total Bets
+Wins / Losses
+ROI
+Total Profit
+Average Odds Played
+Biggest Win / Loss
+
+Badges & Achievements:
+
+Grid layout with unlocked badges: Underdog King, Hot Streak, Big Winner, High Roller, Clutch Player
+Locked badges: Greyed out with tooltip requirements
+
+Performance Visualization:
+
+Profit graph (time-based)
+Win/Loss pie chart
+
+RESPONSIVENESS REQUIREMENTS
+Desktop: Multi-column layouts, side navigationMobile: Bottom navigation, fullscreen bet builder, swipeable leaderboard, optimized touch targets
+DELIVERABLES EXPECTED
+
+Complete Figma component library with design system
+Interactive prototype covering all 6 main screens
+Mobile and desktop responsive layouts
+Animated transitions for key interactions
+Hover states and micro-interactions
+Color-coded status indicators throughout
+
+Design Goal: Create a UI that feels competitive (like real betting apps), social (friend-focused interactions), analytical (data-driven decisions), and clean yet powerful (avoiding visual clutter).
