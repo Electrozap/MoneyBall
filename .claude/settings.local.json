@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(../../../node_modules/.bin/vite build:*)",
+      "Bash(node_modules/.bin/vite build:*)",
+      "Bash(node C:/Users/VICTUS/OneDrive/Desktop/MoneyBall/node_modules/vite/dist/node/cli.js build)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(cmd.exe /c \"where gh\")",
+      "Bash(powershell.exe -Command \"Get-Command gh -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source\")",
+      "Bash(powershell.exe -Command \"Get-ChildItem 'C:\\\\Users\\\\VICTUS\\\\AppData\\\\Local\\\\Programs' -Recurse -Filter 'gh.exe' -ErrorAction SilentlyContinue | Select-Object -First 3 FullName\")",
+      "Bash(npx vite *)"
+    ]
+  }
+}

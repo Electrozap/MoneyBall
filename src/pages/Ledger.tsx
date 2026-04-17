@@ -19,8 +19,9 @@ function betPnl(bet: SupaBet, userId: string): number | null {
   if (isCreator) {
     return won ? (bet.creator_payout ?? 0) - bet.stake : -bet.stake;
   } else {
-    const opponentStake = Math.max(0, (bet.creator_payout ?? bet.stake) - bet.stake);
-    return won ? opponentStake : -opponentStake;
+    // opponent wins creator's stake; opponent loses their own contribution
+    const opponentContribution = Math.max(0, (bet.creator_payout ?? bet.stake) - bet.stake);
+    return won ? bet.stake : -opponentContribution;
   }
 }
 
