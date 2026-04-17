@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Trash2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useBetSlip } from '@/lib/BetSlipContext';
+import { useAuth } from '@/lib/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { BetSelection } from '@/types';
-// import { supabase } from '@/lib/supabase'; // TODO: uncomment when bets table is ready
-import { mockGames, teamAbbr } from '@/lib/mockData';
-
-const USER_ID = 'user_001';
 
 type OddsFormat = 'american' | 'decimal' | 'custom';
 
@@ -20,9 +19,8 @@ interface BetConfig {
 }
 
 function getGameLabel(gameId: string): string {
-  const g = mockGames.find((g) => g.id === gameId);
-  if (!g) return gameId;
-  return `${teamAbbr[g.away_team] ?? g.away_team} @ ${teamAbbr[g.home_team] ?? g.home_team}`;
+  // game IDs are numeric strings from BallDontLie API
+  return gameId ? `Game #${gameId}` : 'Unknown game';
 }
 
 function calcReturn(config: BetConfig, stake: number): number {
@@ -76,6 +74,7 @@ function defaultConfig(sel: BetSelection): BetConfig {
 }
 
 export default function BetSlip() {
+  const { user } = useAuth();
   const { selections, removeSelection, clearSlip } = useBetSlip();
   const [configs, setConfigs] = useState<Record<string, BetConfig>>(() => {
     const init: Record<string, BetConfig> = {};
@@ -120,38 +119,41 @@ export default function BetSlip() {
       }, 0);
 
   const handlePlaceBet = async () => {
+    if (!user) { toast.error('Please sign in first.'); return; }
     setPlacing(true);
     try {
-      // TODO: Requires 'bets' table in Supabase with schema:
-      // id uuid primary key default gen_random_uuid()
-      // game_id text, bet_type text, selection text
-      // odds_format text, custom_odds_numerator int, custom_odds_denominator int
-      // stake numeric, status text default 'pending'
-      // created_by text, opponent_id text, created_at timestamptz default now()
-      //
-      // const rows = selections.map((s) => {
-      //   const cfg = getConfig(s.id);
-      //   return {
-      //     game_id: s.game_id,
-      //     bet_type: s.market.toLowerCase().replace('/', '_'),
-      //     selection: s.selection_label,
-      //     odds_format: cfg.oddsFormat,
-      //     custom_odds_numerator: cfg.oddsFormat === 'custom' ? parseInt(cfg.customNum) : null,
-      //     custom_odds_denominator: cfg.oddsFormat === 'custom' ? parseInt(cfg.customDen) : null,
-      //     stake: parseFloat(cfg.stake),
-      //     status: 'pending',
-      //     created_by: USER_ID,
-      //   };
-      // });
-      // const { error } = await supabase.from('bets').insert(rows);
-      // if (error) throw error;
+      const rows = selections.map((s) => {
+        const cfg = getConfig(s.id);
+        const stakeAmt = parseFloat(cfg.stake) || 0;
+        const payoutAmt = calcReturn(cfg, stakeAmt);
+        return {
+          creator_id: user.id,
+          opponent_id: null,
+          match_id: s.game_id,
+          bet_type: s.market.toLowerCase().replace(/[\s/]+/g, '_'),
+          bet_details: {
+            creator_selection: s.selection_label,
+            odds_format: cfg.oddsFormat,
+            odds_num: cfg.oddsFormat === 'custom' ? parseInt(cfg.customNum) || 1 : null,
+            odds_den: cfg.oddsFormat === 'custom' ? parseInt(cfg.customDen) || 1 : null,
+          },
+          stake: stakeAmt,
+          creator_payout: payoutAmt,
+          opponent_payout: null,
+          status: 'pending',
+          winner_id: null,
+        };
+      });
 
-      // Simulate network delay
-      await new Promise((r) => setTimeout(r, 800));
+      const { error } = await supabase.from('bets').insert(rows);
+      if (error) throw error;
+
+      toast.success('Bets placed!');
       setPlaced(true);
       clearSlip();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error('handlePlaceBet error:', err);
+      toast.error(err.message ?? 'Failed to place bets.');
     } finally {
       setPlacing(false);
     }
