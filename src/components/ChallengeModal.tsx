@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Check, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
@@ -310,6 +310,16 @@ export default function ChallengeModal({
                     placeholder="e.g. Lakers to win"
                     className="w-full bg-[#1a1a1f] border border-white/10 rounded-xl px-4 py-2.5 text-sm placeholder-[#8b8b9a] focus:outline-none focus:border-[#00ff87]/50"
                   />
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => { const tmp = creatorSel; setCreatorSel(opponentSel); setOpponentSel(tmp); }}
+                    className="w-8 h-8 rounded-full bg-[#1a1a1f] border border-white/10 flex items-center justify-center text-[#8b8b9a] hover:text-[#00ff87] hover:border-[#00ff87]/40 transition-colors"
+                    title="Swap selections"
+                  >
+                    <ArrowLeftRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
                 <div>
                   <label className="text-xs text-[#8b8b9a] mb-1 block">Opponent's Selection</label>

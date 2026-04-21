@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown, LogOut, Swords, Check, X, Users } from 'lucide-react';
+import { TrendingUp, TrendingDown, LogOut, Swords, Check, X, Users, Pencil, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -118,6 +118,62 @@ export default function Dashboard() {
     }
   }
 
+  async function settleWithWinner(betId: string, winnerId: string) {
+    try {
+      const { error } = await supabase
+        .from('bets')
+        .update({ winner_id: winnerId, status: 'settled' })
+        .eq('id', betId);
+      if (error) throw error;
+      toast.success('Bet settled!');
+      loadBets();
+    } catch (err) {
+      console.error('settleWithWinner error:', err);
+      toast.error('Failed to settle bet.');
+    }
+  }
+
+  async function voidBet(betId: string) {
+    try {
+      const { error } = await supabase
+        .from('bets')
+        .update({ status: 'void' })
+        .eq('id', betId);
+      if (error) throw error;
+      toast.success('Bet voided.');
+      loadBets();
+    } catch (err) {
+      console.error('voidBet error:', err);
+      toast.error('Failed to void bet.');
+    }
+  }
+
+  async function updateBet(
+    betId: string,
+    newStake: number,
+    newNum: number,
+    newDen: number,
+    currentDetails: Record<string, unknown>
+  ) {
+    const newPayout = newStake + newStake * (newDen / newNum);
+    try {
+      const { error } = await supabase
+        .from('bets')
+        .update({
+          stake: newStake,
+          creator_payout: newPayout,
+          bet_details: { ...currentDetails, odds_num: newNum, odds_den: newDen, odds_format: 'custom' },
+        })
+        .eq('id', betId);
+      if (error) throw error;
+      toast.success('Bet updated.');
+      loadBets();
+    } catch (err) {
+      console.error('updateBet error:', err);
+      toast.error('Failed to update bet.');
+    }
+  }
+
   const userId = user?.id ?? '';
 
   // Incoming challenges: pending bets where opponent = user
@@ -221,7 +277,16 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-3">
             {activeBets.map((bet) => (
-              <ActiveBetCard key={bet.id} bet={bet} userId={userId} />
+              <ActiveBetCard
+                key={bet.id}
+                bet={bet}
+                userId={userId}
+                onSettle={settleWithWinner}
+                onVoid={voidBet}
+                onEdit={updateBet}
+                creatorProfile={bet.creator ?? null}
+                opponentProfile={bet.opponent ?? null}
+              />
             ))}
           </div>
         )}
@@ -326,14 +391,36 @@ function ChallengeCard({ bet, onAccept, onDecline }: {
   );
 }
 
-function ActiveBetCard({ bet, userId }: { bet: SupaBet; userId: string }) {
+function ActiveBetCard({
+  bet,
+  userId,
+  onSettle,
+  onVoid,
+  onEdit,
+  creatorProfile,
+  opponentProfile,
+}: {
+  bet: SupaBet;
+  userId: string;
+  onSettle: (betId: string, winnerId: string) => void;
+  onVoid: (betId: string) => void;
+  onEdit: (betId: string, stake: number, num: number, den: number, details: Record<string, unknown>) => void;
+  creatorProfile: { id: string; full_name: string } | null;
+  opponentProfile: { id: string; full_name: string } | null;
+}) {
+  const [mode, setMode] = useState<'view' | 'declare' | 'edit' | 'delete'>('view');
+  const [editStake, setEditStake] = useState(String(bet.stake));
+  const [editNum, setEditNum] = useState(String(bet.bet_details.odds_num ?? 1));
+  const [editDen, setEditDen] = useState(String(bet.bet_details.odds_den ?? 1));
+
   const payout = bet.creator_payout ?? 0;
   const isCreator = bet.creator_id === userId;
   const potentialWin = isCreator ? payout - bet.stake : bet.stake;
-  const opponent = isCreator ? bet.opponent : bet.creator;
+  const opponent = isCreator ? opponentProfile : creatorProfile;
 
   return (
     <div className="bg-[#1a1a1f] rounded-xl p-4 border border-white/5">
+      {/* Top row */}
       <div className="flex items-start justify-between mb-2">
         <div className="min-w-0 mr-2">
           <p className="text-xs text-[#8b8b9a] mb-0.5 truncate">{gameLabel(bet)}</p>
@@ -345,15 +432,152 @@ function ActiveBetCard({ bet, userId }: { bet: SupaBet; userId: string }) {
             </div>
           )}
         </div>
-        <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-0.5 rounded-full shrink-0">
-          {bet.status === 'accepted' ? 'Active' : 'Pending'}
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-xs bg-yellow-500/10 text-yellow-400 px-2 py-0.5 rounded-full">
+            {bet.status === 'accepted' ? 'Active' : 'Pending'}
+          </span>
+          <button
+            onClick={() => setMode(mode === 'edit' ? 'view' : 'edit')}
+            className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-[#8b8b9a] hover:text-white transition-colors"
+            title="Edit bet"
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+          <button
+            onClick={() => setMode(mode === 'delete' ? 'view' : 'delete')}
+            className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-[#8b8b9a] hover:text-[#ff3b5c] transition-colors"
+            title="Void bet"
+          >
+            <Trash2 className="w-3 h-3" />
+          </button>
+        </div>
       </div>
+
+      {/* Stats row */}
       <div className="flex items-center justify-between text-xs text-[#8b8b9a] mt-2 pt-2 border-t border-white/5">
         <span>Stake: <span className="text-white font-medium">₹{bet.stake.toLocaleString('en-IN')}</span></span>
         <span>Odds: <span className="text-white font-medium">{formatBetOdds(bet)}</span></span>
         <span>Win: <span className="text-[#00ff87] font-medium">+₹{potentialWin.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></span>
       </div>
+
+      {/* Declare Result panel */}
+      {mode === 'view' && bet.status === 'accepted' && (
+        <button
+          onClick={() => setMode('declare')}
+          className="mt-3 w-full text-xs text-[#8b8b9a] hover:text-white border border-white/10 hover:border-white/20 rounded-lg py-1.5 transition-colors"
+        >
+          Declare Result
+        </button>
+      )}
+
+      {mode === 'declare' && (
+        <div className="mt-3 space-y-2">
+          <p className="text-xs text-[#8b8b9a] mb-1">Who won?</p>
+          <div className="flex gap-2">
+            {creatorProfile && (
+              <button
+                onClick={() => { onSettle(bet.id, creatorProfile.id); setMode('view'); }}
+                className="flex-1 bg-[#00ff87]/10 border border-[#00ff87]/30 text-[#00ff87] text-xs font-bold py-2 rounded-lg truncate px-2"
+              >
+                {creatorProfile.full_name}
+              </button>
+            )}
+            {opponentProfile && (
+              <button
+                onClick={() => { onSettle(bet.id, opponentProfile.id); setMode('view'); }}
+                className="flex-1 bg-[#00ff87]/10 border border-[#00ff87]/30 text-[#00ff87] text-xs font-bold py-2 rounded-lg truncate px-2"
+              >
+                {opponentProfile.full_name}
+              </button>
+            )}
+          </div>
+          <button
+            onClick={() => setMode('view')}
+            className="w-full text-xs text-[#8b8b9a] hover:text-white py-1 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Edit panel */}
+      {mode === 'edit' && (
+        <div className="mt-3 space-y-2 border-t border-white/5 pt-3">
+          <p className="text-xs text-[#8b8b9a] mb-1">Edit Stake &amp; Odds</p>
+          <div className="flex gap-2 items-center">
+            <div className="flex-1">
+              <label className="text-[10px] text-[#8b8b9a] mb-0.5 block">Stake (₹)</label>
+              <input
+                type="number" min="1" value={editStake}
+                onChange={(e) => setEditStake(e.target.value)}
+                className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-[#00ff87]/50"
+              />
+            </div>
+            <div className="flex items-end gap-1">
+              <div>
+                <label className="text-[10px] text-[#8b8b9a] mb-0.5 block">Num</label>
+                <input
+                  type="number" min="1" value={editNum}
+                  onChange={(e) => setEditNum(e.target.value)}
+                  className="w-14 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-center focus:outline-none focus:border-[#00ff87]/50"
+                />
+              </div>
+              <span className="text-[#8b8b9a] font-bold pb-1.5">:</span>
+              <div>
+                <label className="text-[10px] text-[#8b8b9a] mb-0.5 block">Den</label>
+                <input
+                  type="number" min="1" value={editDen}
+                  onChange={(e) => setEditDen(e.target.value)}
+                  className="w-14 bg-black/30 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-center focus:outline-none focus:border-[#00ff87]/50"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                const s = parseFloat(editStake);
+                const n = parseFloat(editNum);
+                const d = parseFloat(editDen);
+                if (s > 0 && n > 0 && d > 0) {
+                  onEdit(bet.id, s, n, d, bet.bet_details as Record<string, unknown>);
+                  setMode('view');
+                }
+              }}
+              className="flex-1 bg-[#00ff87]/10 border border-[#00ff87]/30 text-[#00ff87] text-xs font-bold py-1.5 rounded-lg"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setMode('view')}
+              className="flex-1 bg-white/5 border border-white/10 text-[#8b8b9a] text-xs font-bold py-1.5 rounded-lg"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete / Void confirm panel */}
+      {mode === 'delete' && (
+        <div className="mt-3 border-t border-white/5 pt-3">
+          <p className="text-xs text-[#8b8b9a] mb-2">Void this bet? This cannot be undone.</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { onVoid(bet.id); setMode('view'); }}
+              className="flex-1 bg-[#ff3b5c]/10 border border-[#ff3b5c]/30 text-[#ff3b5c] text-xs font-bold py-2 rounded-lg"
+            >
+              Yes, Void Bet
+            </button>
+            <button
+              onClick={() => setMode('view')}
+              className="flex-1 bg-white/5 border border-white/10 text-[#8b8b9a] text-xs font-bold py-2 rounded-lg"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
